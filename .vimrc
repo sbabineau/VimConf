@@ -20,10 +20,10 @@
     NeoBundle 'smeggingsmegger/ag.vim'
 
     " A really cool shell in vim!
-    NeoBundle 'Shougo/vimshell.vim'
+    " NeoBundle 'Shougo/vimshell.vim'
 
     " todo.txt plugin.
-    NeoBundle 'freitass/todo.txt-vim'
+    " NeoBundle 'freitass/todo.txt-vim'
 
     " Git Integration
     NeoBundle 'airblade/vim-gitgutter'
@@ -42,7 +42,7 @@
     NeoBundle 'bling/vim-airline'
 
     " Better Python code completion.
-    " NeoBundleLazy 'davidhalter/jedi-vim', { 'filetypes' : ['python'] }
+    NeoBundleLazy 'davidhalter/jedi-vim', { 'filetypes' : ['python'] }
     " Use Python mode for all the awesome PEP-8 stuff but not for completion.
     NeoBundleLazy 'klen/python-mode', { 'filetypes' : ['python'] }
 
@@ -86,18 +86,18 @@
     NeoBundleLazy 'mattn/emmet-vim', { 'filetypes' : ['javascript', 'html', 'php'] }
 
     " Syntax, tabs, indenting, etc. for PHP, JS, Puppet, Go, Coffee
-    NeoBundleLazy 'StanAngeloff/php.vim', { 'filetypes' : ['javascript', 'html', 'php', 'jinja'] }
-    NeoBundleLazy 'pangloss/vim-javascript', { 'filetypes' : ['javascript', 'html', 'php', 'jinja'] }
-    NeoBundleLazy 'maksimr/vim-jsbeautify', { 'filetypes' : ['javascript', 'html', 'php', 'jinja', 'css'] }
-    NeoBundleLazy 'einars/js-beautify', { 'filetypes' : ['javascript', 'html', 'php', 'jinja', 'css'] }
+    " NeoBundleLazy 'StanAngeloff/php.vim', { 'filetypes' : ['javascript', 'html', 'php', 'jinja'] }
+    " NeoBundleLazy 'pangloss/vim-javascript', { 'filetypes' : ['javascript', 'html', 'php', 'jinja'] }
+    " NeoBundleLazy 'maksimr/vim-jsbeautify', { 'filetypes' : ['javascript', 'html', 'php', 'jinja', 'css'] }
+    " NeoBundleLazy 'einars/js-beautify', { 'filetypes' : ['javascript', 'html', 'php', 'jinja', 'css'] }
     NeoBundleLazy 'rodjek/vim-puppet', { 'filetypes' : ['puppet'] }
     NeoBundleLazy 'fatih/vim-go', { 'filetypes' : ['go'] }
-    NeoBundleLazy 'kchmck/vim-coffee-script', { 'filetypes' : ['coffee', 'javascript', 'html', 'jinja'] }
+    " NeoBundleLazy 'kchmck/vim-coffee-script', { 'filetypes' : ['coffee', 'javascript', 'html', 'jinja'] }
     NeoBundleLazy 'plasticboy/vim-markdown', { 'filetypes' : ['mkd'] }
     NeoBundleLazy 'elzr/vim-json', { 'filetypes' : ['json', 'jinja'] }
-    NeoBundleLazy 'groenewege/vim-less', { 'filetypes' : ['less'] }
+    " NeoBundleLazy 'groenewege/vim-less', { 'filetypes' : ['less'] }
     NeoBundleLazy 'mitsuhiko/vim-jinja', { 'filetypes' : ['html', 'jinja'] }
-    NeoBundleLazy 'sophacles/vim-bundle-mako', { 'filetypes' : ['html', 'jinja'] }
+    " NeoBundleLazy 'sophacles/vim-bundle-mako', { 'filetypes' : ['html', 'jinja'] }
 
     " NOT WORKING WITH HOMEBREW VIM. :( Keeping to try out later.
     " YouCompleteMe uses jedi to complete for Python and works for many other
@@ -343,7 +343,7 @@
     let coffee_compile_vert=1 " When compiling CoffeeScript, throw output into vertical split
     let coffee_make_options='--bare'
     let g:syntastic_check_on_open=1 " Run Syntastic when opening files
-    let g:syntastic_python_checkers=['python', 'pyflakes'] " Be more strict in python syntax
+    let g:syntastic_python_checkers=['python', 'pyflakes', 'pylama'] " Be more strict in python syntax
     let g:ftplugin_sql_omni_key='<C-S>' " reset sql omni key
     let NERDSpaceDelims=1 " Add space delimiters
     let g:gitgutter_eager=0 " Only run gitgutter on read/write of files
@@ -461,11 +461,15 @@ inoremap <expr><C-y> neocomplete#close_popup()
 inoremap <expr><C-e> neocomplete#cancel_popup()
 
 " Enable heavy omni completion.
-if !exists('g:neocomplete#sources#omni#input_patterns')
-  let g:neocomplete#sources#omni#input_patterns = {}
+if !exists('g:neocomplete#force_omni_input_patterns')
+  let g:neocomplete#force_omni_input_patterns = {}
 endif
 " Python's omni completion is broken
-let g:neocomplete#sources#omni#input_patterns.python = ''
+" let g:neocomplete#sources#omni#input_patterns.python = ''
+autocmd FileType python setlocal omnifunc=jedi#completions
+let g:jedi#completions_enabled = 0
+let g:jedi#auto_vim_configuration = 0
+let g:neocomplete#force_omni_input_patterns.python = '\%([^. \t]\.\|^\s*@\|^\s*from\s.\+import \|^\s*from \|^\s*import \)\w*'
 
 " --------------------
 " Neosnippets Mappings
@@ -515,23 +519,6 @@ smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
         autocmd!
         " Display real tabs like 4 spaces, don't list trailing characters
         au BufNewFile,BufReadPost *.go setl noexpandtab tabstop=4 nolist
-    augroup END
-    augroup javascript_au
-        autocmd!
-        " Add debugger key command for JS
-        au BufNewFile,BufReadPost *.js nnoremap <Leader>b :call InsertDebugLine("debugger;", line('.'))<return>
-    augroup END
-    augroup less_au
-        autocmd!
-        " Function to compile Less to CSS
-        function! LessToCss()
-            let current_file = shellescape(expand('%:p'))
-            let filename = shellescape(expand('%:r'))
-            let command = "silent !lessc " . current_file . " " . filename . ".css"
-            execute command
-        endfunction
-        " Auto-compile less files on save.
-        autocmd BufWritePost,FileWritePost *.less call LessToCss()
     augroup END
     augroup python_au
         autocmd!

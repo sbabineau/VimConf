@@ -22,21 +22,15 @@
     " A really cool shell in vim!
     " NeoBundle 'Shougo/vimshell.vim'
 
-    " todo.txt plugin.
-    " NeoBundle 'freitass/todo.txt-vim'
-
     " Git Integration
     NeoBundle 'airblade/vim-gitgutter'
     NeoBundle 'tpope/vim-fugitive'
 
     " Colors
-    NeoBundle 'smeggingsmegger/vim-colorschemes'
+    NeoBundle 'flazz/vim-colorschemes'
 
     " Nicer start screen
     NeoBundle 'mhinz/vim-startify'
-
-    " <Tab> all the things!
-    " NeoBundle 'ervandew/supertab'
 
     " A pretty statusline, bufferline integration
     NeoBundle 'bling/vim-airline'
@@ -49,13 +43,6 @@
     " Vim window manager. CTRL-N, CTRL-C (Close), CTRL-space (Make active
     " window), CTRL-J (Next), CTRL-K (Prev)
     NeoBundle 'spolu/dwm.vim'
-
-    " Track the snippets engine.
-    " CTRL-C to use
-    " NeoBundle 'SirVer/ultisnips'
-
-    " Snippets are separated from the engine. Add this if you want them:
-    " NeoBundle 'honza/vim-snippets'
 
     " Tagbar for browsing source code trees.
     NeoBundle 'majutsushi/tagbar'
@@ -83,6 +70,8 @@
 
     " Sparkup for HTML voodoo
     " CTRL-y, to convert
+    NeoBundleLazy 'rstacruz/sparkup', { 'filetypes' : ['html'] }
+
     NeoBundleLazy 'mattn/emmet-vim', { 'filetypes' : ['javascript', 'html', 'php'] }
 
     " Syntax, tabs, indenting, etc. for PHP, JS, Puppet, Go, Coffee
@@ -98,16 +87,6 @@
     " NeoBundleLazy 'groenewege/vim-less', { 'filetypes' : ['less'] }
     NeoBundleLazy 'mitsuhiko/vim-jinja', { 'filetypes' : ['html', 'jinja'] }
     " NeoBundleLazy 'sophacles/vim-bundle-mako', { 'filetypes' : ['html', 'jinja'] }
-
-    " NOT WORKING WITH HOMEBREW VIM. :( Keeping to try out later.
-    " YouCompleteMe uses jedi to complete for Python and works for many other
-    " languages. This replaces python-mode.
-    " NeoBundle 'Valloric/YouCompleteMe.git' , {
-          " \     'build' : {
-          " \         'mac' : './install.sh --clang-completer',
-          " \         'unix' : './install.sh --clang-completer --system-libclang'
-          " \     },
-          " \ }
 
     " vimproc needs a special build
     NeoBundle 'Shougo/vimproc', {
@@ -165,12 +144,6 @@
     set wildmode=list:longest " turn on wild mode huge list
     " Set buffer to infinity
     set viminfo='100,h
-
-    " Enable omnicompletion
-    " NOTE: This is turned off right now because of jedi-vim
-    " set omnifunc=syntaxcomplete#Complete
-    " au FileType python set omnifunc=jedi#completions
-" }
 
 " Vim UI {
     set cursorline " highlight current line
@@ -299,12 +272,6 @@
     vnoremap <S-Up> 10k
     " Send the selected hunk to IWS's hastebin
     vnoremap <Leader>hb <esc>:'<,'>:w !HASTE_SERVER=http://hastebin.britecorepro.com haste<CR>
-    " Jump easily between open windows
-    " Deprecated in favor of DWM
-    " nnoremap <C-h> <C-w>h
-    " nnoremap <C-j> <C-w>j
-    " nnoremap <C-k> <C-w>k
-    " nnoremap <C-l> <C-w>l
     " " Howdoi mapping
     map <Leader>hdi <Plug>Howdoi
     " Refresh syntax highlighting
@@ -337,6 +304,8 @@
     " 'Parameters' Operator mapping
     " Usage: dp - Delete between ()
     onoremap p i(
+    "toggle relative line numbers
+    nnoremap <leader>n :call NumberToggle()<cr>
 " }
 
 " Plugin settings {
@@ -380,13 +349,6 @@
     let g:indent_guides_auto_colors = 0
     hi IndentGuidesOdd ctermbg=234
     hi IndentGuidesEven ctermbg=234
-
-    " Jedi settings
-    " let g:jedi#popup_on_dot = 1
-    " let g:jedi#popup_select_first = 1
-    " Disabling parameter autocomplete to speed up completion for now.
-    " Will enable after it is fixed in Jedi.
-    " let g:jedi#show_call_signatures = "0"
 
     " No rope for autocomplete!
     let g:pymode_rope = 0
@@ -501,6 +463,15 @@ smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
         " Save file without any events
         if &modifiable && &modified | noautocmd write | endif
     endfunction
+
+    "Toggles relative line numbers on and off
+    function! NumberToggle()
+        if(&relativenumber == 1)
+            set number
+        else
+            set relativenumber
+        endif
+    endfunction
 " }
 
 " Autocmds {
@@ -541,6 +512,13 @@ smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
         endfunction
         autocmd FileType unite call s:unite_settings()
     augroup END
+
+    "Autocommands to set relative line numbers when you have focus and are not
+    "in insert mode
+    au FocusLost * :set number
+    au FocusGained * :set relativenumber
+    autocmd InsertEnter * :set number
+    autocmd InsertLeave * :set relativenumber
 " }
 
 " Include custom configurations via the .vimrc_custom file

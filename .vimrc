@@ -17,7 +17,7 @@
     NeoBundle 'Shougo/unite.vim'
 
     " Search using ag or ack!
-    NeoBundle 'smeggingsmegger/ag.vim'
+    NeoBundle 'rking/ag.vim'
 
     " A really cool shell in vim!
     " NeoBundle 'Shougo/vimshell.vim'

@@ -309,8 +309,6 @@
 " }
 
 " Plugin settings {
-    let coffee_compile_vert=1 " When compiling CoffeeScript, throw output into vertical split
-    let coffee_make_options='--bare'
     let g:syntastic_check_on_open=1 " Run Syntastic when opening files
     let g:syntastic_python_checkers=['python', 'pyflakes', 'pylama'] " Be more strict in python syntax
     let g:ftplugin_sql_omni_key='<C-S>' " reset sql omni key

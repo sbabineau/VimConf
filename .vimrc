@@ -5,7 +5,7 @@
 
 " Basics {
     set nocompatible " explicitly get out of vi-compatible mode
-    syntax on " syntax highlighting on
+    syntax enable " syntax highlighting on
     if has('vim_starting')
            set runtimepath+=~/.vim/bundle/neobundle.vim/
     endif
@@ -49,6 +49,9 @@
 
     " Show indent level with ,ig
     NeoBundle 'nathanaelkane/vim-indent-guides'
+
+    " Color scheme
+    NeoBundle 'altercation/vim-colors-solarized'
 
     " Quick commenting using ,,
     NeoBundle 'scrooloose/nerdcommenter'
@@ -118,9 +121,11 @@
     set directory=~/.vim/tmp " directory to place swap files in
     set fileformats=unix,mac,dos " support all three, in this order
     set hidden " you can change buffers without saving
+    set encoding=utf-8 " allow those fancy powerline symbols
     if has("mouse")
         set mouse=a " use mouse everywhere
     endif
+
     set noerrorbells " don't make noise when something errors
     if has("persistent_undo")
         set undofile " enable file undoing
@@ -199,6 +204,7 @@
     set softtabstop=4 " when hitting tab or backspace, how many spaces
                        "should a tab be (see expandtab)
     set tabstop=4 " We don't care about real tabs...
+    let g:ansible_options = {'ignore_blank_lines': 0} "removes all indent after blank line
 " }
 
 " Mappings {
@@ -207,7 +213,8 @@
     nnoremap <Leader>/ :Unite grep:.<cr>
     nnoremap <Leader>y :Unite -buffer-name=yank history/yank<cr>
     nnoremap <Leader>l :Unite -buffer-name=buffers -quick-match buffer<cr>
-    nnoremap <C-p> :Unite -start-insert file<cr>
+    nnoremap <C-p> :UniteWithCurrentDir -start-insert file_rec/async:!<cr>
+    nnoremap <C-o> :Unite -start-insert file_rec/async:!<cr>
     " Mapping tab commands
     nnoremap <Leader>tc :tabc<return>
     nnoremap <Leader>tn :tabn<return>
@@ -374,6 +381,20 @@
     let g:unite_enabled_start_insert=1
     let g:unite_source_history_yank_enable=1
     let g:unite_winheight = 10
+    if executable('ag')
+        let g:unite_source_grep_command = 'ag'
+        let g:unite_source_grep_default_opts = '--nogroup --nocolor --column'
+        let g:unite_source_grep_recursive_opt = ''
+        let g:unite_source_rec_async_command = 'ag --follow --nocolor --nogroup --hidden -g ""'
+    endif
+    call unite#custom_source('file_rec,file_rec/async,file_mru,file,buffer,grep',
+          \ 'ignore_pattern', join([
+          \ '\.git/',
+          \ ], '\|'))
+    call unite#filters#matcher_default#use(['matcher_fuzzy'])
+    call unite#filters#sorter_default#use(['sorter_rank'])
+    call unite#custom#source('file_rec/async','sorters','sorter_rank')
+    autocmd FileType unite call s:unite_settings()
 
     " Startify settings
     let g:startify_session_persistence = 1
@@ -513,10 +534,13 @@ smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
 
     "Autocommands to set relative line numbers when you have focus and are not
     "in insert mode
-    au FocusLost * :set number
-    au FocusGained * :set relativenumber
-    autocmd InsertEnter * :set number
-    autocmd InsertLeave * :set relativenumber
+    augroup lines_au
+        autocmd!
+        au FocusLost * :set number
+        au FocusGained * :set relativenumber
+        autocmd InsertEnter * :set number
+        autocmd InsertLeave * :set relativenumber
+    augroup END
 " }
 
 " Include custom configurations via the .vimrc_custom file
